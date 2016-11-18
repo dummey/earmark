@@ -11,6 +11,10 @@ defmodule Support.Helpers do
     %Earmark.Context{}
   end
 
+  def options do
+    %Earmark.Options{}
+  end
+
   def test_links do
     [
      {"id1", %IdDef{url: "url 1", title: "title 1"}},

@@ -43,28 +43,28 @@ defmodule Earmark.Line do
 #'
 
 
-  defmodule Blank,        do: defstruct lnb: 0, line: "", content: "", inside_code: false
-  defmodule Ruler,        do: defstruct lnb: 0, line: "", type: "- or * or _", inside_code: false
-  defmodule Heading,      do: defstruct lnb: 0, line: "", level: 1, content: "inline text", inside_code: false
-  defmodule BlockQuote,   do: defstruct lnb: 0, line: "", content: "text", inside_code: false
-  defmodule Indent,       do: defstruct lnb: 0, line: "", level: 0, content: "text", inside_code: false
-  defmodule Fence,        do: defstruct lnb: 0, line: "", delimiter: "~ or `", language: nil , inside_code: false
-  defmodule HtmlOpenTag,  do: defstruct lnb: 0, line: "", tag: "", content: "", inside_code: false
-  defmodule HtmlCloseTag, do: defstruct lnb: 0, line: "", tag: "<... to eol", inside_code: false
-  defmodule HtmlComment,  do: defstruct lnb: 0, line: "", complete: true, inside_code: false
-  defmodule HtmlOneLine,  do: defstruct lnb: 0, line: "", tag: "", content: "", inside_code: false
-  defmodule IdDef,        do: defstruct lnb: 0, line: "", id: nil, url: nil, title: nil, inside_code: false
-  defmodule FnDef,        do: defstruct lnb: 0, line: "", id: nil, content: "text", inside_code: false
-  defmodule ListItem,     do: defstruct lnb: 0, type: :ul, line: "",
+  defmodule Blank,        do: defstruct lnb: 0, line: "", content: "", inside_code: false, leading_space_count: 0
+  defmodule Ruler,        do: defstruct lnb: 0, line: "", type: "- or * or _", inside_code: false, leading_space_count: 0
+  defmodule Heading,      do: defstruct lnb: 0, line: "", level: 1, content: "inline text", inside_code: false, leading_space_count: 0
+  defmodule BlockQuote,   do: defstruct lnb: 0, line: "", content: "text", inside_code: false, leading_space_count: 0
+  defmodule Indent,       do: defstruct lnb: 0, line: "", level: 0, content: "text", inside_code: false, leading_space_count: 0
+  defmodule Fence,        do: defstruct lnb: 0, line: "", delimiter: "~ or `", language: nil , inside_code: false, leading_space_count: 0
+  defmodule HtmlOpenTag,  do: defstruct lnb: 0, line: "", tag: "", content: "", inside_code: false, leading_space_count: 0
+  defmodule HtmlCloseTag, do: defstruct lnb: 0, line: "", tag: "<... to eol", inside_code: false, leading_space_count: 0
+  defmodule HtmlComment,  do: defstruct lnb: 0, line: "", complete: true, inside_code: false, leading_space_count: 0
+  defmodule HtmlOneLine,  do: defstruct lnb: 0, line: "", tag: "", content: "", inside_code: false, leading_space_count: 0
+  defmodule IdDef,        do: defstruct lnb: 0, line: "", id: nil, url: nil, title: nil, inside_code: false, leading_space_count: 0
+  defmodule FnDef,        do: defstruct lnb: 0, line: "", id: nil, content: "text", inside_code: false, leading_space_count: 0
+  defmodule ListItem,     do: defstruct lnb: 0, type: :ul, line: "", leading_space_count: 0,
                                         bullet: "* or -", content: "text",
                                         initial_indent: 0, inside_code: false
   defmodule SetextUnderlineHeading,
-                          do: defstruct lnb: 0, line: "", level: 1, inside_code: false, inside_code: false
-  defmodule TableLine,    do: defstruct lnb: 0, line: "", content: "", columns: 0, inside_code: false
-  defmodule Ial,          do: defstruct lnb: 0, line: "", attrs:   "", inside_code: false
-  defmodule Text,         do: defstruct lnb: 0, line: "", content: "", inside_code: false
+                          do: defstruct lnb: 0, line: "", level: 1, inside_code: false, inside_code: false, leading_space_count: 0
+  defmodule TableLine,    do: defstruct lnb: 0, line: "", content: "", columns: 0, inside_code: false, leading_space_count: 0
+  defmodule Ial,          do: defstruct lnb: 0, line: "", attrs:   "", inside_code: false, leading_space_count: 0
+  defmodule Text,         do: defstruct lnb: 0, line: "", content: "", inside_code: false, leading_space_count: 0
 
-  defmodule Plugin,       do: defstruct lnb: 0, line: "", content: "", prefix: "$$"
+  defmodule Plugin,       do: defstruct lnb: 0, line: "", content: "", prefix: "$$", leading_space_count: 0
 
   @type t :: %Blank{} | %Ruler{} | %Heading{} | %BlockQuote{} | %Indent{} | %Fence{} | %HtmlOpenTag{} | %HtmlCloseTag{} | %HtmlComment{} | %HtmlOneLine{} | %IdDef{} | %FnDef{} | %ListItem{} | %SetextUnderlineHeading{} | %TableLine{} | %Ial{} | %Text{} | %Plugin{}
 
@@ -79,17 +79,21 @@ defmodule Earmark.Line do
   def scan_lines lines, options \\ %Earmark.Options{}, recursive \\ false
   def scan_lines lines, options, recursive do
     lines_with_count( lines, options.line - 1)
-    |> Earmark.pmap( fn (line) ->  type_of(line, options, recursive) end)
+    |> Earmark.pmap(&type_with_leading_space_count(&1, options, recursive))
   end
 
   defp lines_with_count lines, offset do
     Enum.zip lines, offset..(offset+Enum.count(lines))
   end
 
-  def type_of(line, recursive)
+  def type_with_leading_space_count(line, options, recursive) do
+    %{type_of(line, options, recursive) | leading_space_count: count_leading_spaces(line)}
+  end
+
+  defp type_of(line, recursive)
   when is_boolean(recursive), do: type_of(line, %Earmark.Options{}, recursive)
 
-  def type_of({line, lnb}, options = %Earmark.Options{}, recursive) do
+  defp type_of({line, lnb}, options = %Earmark.Options{}, recursive) do
     line = line |> Helpers.expand_tabs |> Helpers.remove_line_ending
     %{ _type_of(line, options, recursive) | line: line, lnb: lnb }
   end
@@ -233,5 +237,8 @@ defmodule Earmark.Line do
     |> Enum.map(&String.strip/1)
     |> Enum.map(fn col -> Regex.replace(~r{\\\|}, col, "|") end)
   end
+
+  defp count_leading_spaces({line_text, _line_nb}), do:
+    String.length(line_text) -  String.length(String.trim_leading(line_text, " "))
 
 end
