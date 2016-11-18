@@ -17,8 +17,8 @@ defmodule Functional.Scanner.LineTypeTest do
   id11 = ~S{[ID11]: http://example.com "Title with trailing whitespace" }
 
   [
-    { "",         %Line.Blank{leading_space_count: 0}, 0 },
-    { "        ", %Line.Blank{leading_space_count: 8}, 1 },
+    { "",         %Line.Blank{spacing: 0}, 0 },
+    { "        ", %Line.Blank{spacing: 8}, 1 },
 
     { "<!-- comment -->", %Line.HtmlComment{complete: true}, 2 },
     { "<!-- comment",     %Line.HtmlComment{complete: false}, 3 },
@@ -29,9 +29,9 @@ defmodule Functional.Scanner.LineTypeTest do
     { "---",   %Line.Ruler{type: "-"}, 7 },
 
     { "* *",   %Line.ListItem{type: :ul, bullet: "*", content: "*"}, 8 },
-    { " * *",   %Line.ListItem{type: :ul, bullet: "*", content: "*",   initial_indent: 1, leading_space_count: 1}, 9 },
-    { "  * *",   %Line.ListItem{type: :ul, bullet: "*", content: "*",  initial_indent: 2, leading_space_count: 2}, 10 },
-    { "   * *",   %Line.ListItem{type: :ul, bullet: "*", content: "*", initial_indent: 3, leading_space_count: 3}, 11 },
+    { " * *",   %Line.ListItem{type: :ul, bullet: "*", content: "*",   initial_indent: 1, spacing: 1}, 9 },
+    { "  * *",   %Line.ListItem{type: :ul, bullet: "*", content: "*",  initial_indent: 2, spacing: 2}, 10 },
+    { "   * *",   %Line.ListItem{type: :ul, bullet: "*", content: "*", initial_indent: 3, spacing: 3}, 11 },
     { "* * *", %Line.Ruler{type: "*"}, 12 },
     { "**",    %Line.Text{content: "**"}, 13 },
     { "***",   %Line.Ruler{type: "*"}, 14 },
@@ -54,22 +54,22 @@ defmodule Functional.Scanner.LineTypeTest do
     { ">quote",     %Line.Text{content: ">quote"}, 28 },
 
       #1234567890
-    { "   a",        %Line.Text{content: "   a", leading_space_count: 3}, 29 },
-    { "    b",       %Line.Indent{level: 1, content: "b", leading_space_count: 4}, 30 },
-    { "      c",     %Line.Indent{level: 1, content: "  c", leading_space_count: 6}, 31 },
-    { "        d",   %Line.Indent{level: 2, content: "d", leading_space_count: 8}, 32 },
-    { "          e", %Line.Indent{level: 2, content: "  e", leading_space_count: 10}, 33 },
+    { "   a",        %Line.Text{content: "   a", spacing: 3}, 29 },
+    { "    b",       %Line.Indent{level: 1, content: "b", spacing: 4}, 30 },
+    { "      c",     %Line.Indent{level: 1, content: "  c", spacing: 6}, 31 },
+    { "        d",   %Line.Indent{level: 2, content: "d", spacing: 8}, 32 },
+    { "          e", %Line.Indent{level: 2, content: "  e", spacing: 10}, 33 },
 
     { "```",      %Line.Fence{delimiter: "```", language: "",     line: "```"}, 34 },
     { "``` java", %Line.Fence{delimiter: "```", language: "java", line: "``` java"}, 35 },
-    { " ``` java", %Line.Fence{delimiter: "```", language: "java", line: " ``` java", leading_space_count: 1}, 36 },
+    { " ``` java", %Line.Fence{delimiter: "```", language: "java", line: " ``` java", spacing: 1}, 36 },
     { "```java",  %Line.Fence{delimiter: "```", language: "java", line: "```java"}, 37 },
     { "```language-java",  %Line.Fence{delimiter: "```", language: "language-java"}, 38 },
     { "```language-élixir",  %Line.Fence{delimiter: "```", language: "language-élixir"}, 39 },
 
     { "~~~",      %Line.Fence{delimiter: "~~~", language: "",     line: "~~~"}, 40 },
     { "~~~ java", %Line.Fence{delimiter: "~~~", language: "java", line: "~~~ java"}, 41 },
-    { "  ~~~java",  %Line.Fence{delimiter: "~~~", language: "java", line: "  ~~~java", leading_space_count: 2}, 42 },
+    { "  ~~~java",  %Line.Fence{delimiter: "~~~", language: "java", line: "  ~~~java", spacing: 2}, 42 },
     { "~~~ language-java", %Line.Fence{delimiter: "~~~", language: "language-java"}, 43 },
     { "~~~ language-élixir",  %Line.Fence{delimiter: "~~~", language: "language-élixir"}, 44 },
 
@@ -111,11 +111,11 @@ defmodule Functional.Scanner.LineTypeTest do
     { id3, %Line.IdDef{id: "ID3", url: "http://example.com", title: "The title"}, 71 },
     { id4, %Line.IdDef{id: "ID4", url: "http://example.com", title: ""}, 72 },
     { id5, %Line.IdDef{id: "ID5", url: "http://example.com", title: "The title"}, 73 },
-    { id6, %Line.IdDef{id: "ID6", url: "http://example.com", title: "The title", leading_space_count: 1}, 74 },
-    { id7, %Line.IdDef{id: "ID7", url: "http://example.com", title: "The title", leading_space_count: 2}, 75 },
-    { id8, %Line.IdDef{id: "ID8", url: "http://example.com", title: "The title", leading_space_count: 3}, 76 },
+    { id6, %Line.IdDef{id: "ID6", url: "http://example.com", title: "The title", spacing: 1}, 74 },
+    { id7, %Line.IdDef{id: "ID7", url: "http://example.com", title: "The title", spacing: 2}, 75 },
+    { id8, %Line.IdDef{id: "ID8", url: "http://example.com", title: "The title", spacing: 3}, 76 },
     { id9, %Line.Indent{content: "[ID9]: http://example.com  \"The title\"",
-        level: 1,       line: "    [ID9]: http://example.com  \"The title\"", leading_space_count: 4}, 77 },
+        level: 1,       line: "    [ID9]: http://example.com  \"The title\"", spacing: 4}, 77 },
 
       {id10, %Line.IdDef{id: "ID10", url: "/url/", title: "Title with \"quotes\" inside"}, 78},
       {id11, %Line.IdDef{id: "ID11", url: "http://example.com", title: "Title with trailing whitespace"}, 79},
@@ -137,19 +137,19 @@ defmodule Functional.Scanner.LineTypeTest do
       { "-",        %Line.SetextUnderlineHeading{level: 2}, 90 },
       { "= and so", %Line.Text{content: "= and so"}, 91 },
 
-      { "   (title)", %Line.Text{content: "   (title)", leading_space_count: 3}, 92 },
+      { "   (title)", %Line.Text{content: "   (title)", spacing: 3}, 92 },
 
       { "{: .attr }",       %Line.Ial{attrs: ".attr"}, 93 },
       { "{:.a1 .a2}",       %Line.Ial{attrs: ".a1 .a2"}, 94 },
 
       { "  | a | b | c | ", %Line.TableLine{content: "  | a | b | c | ",
-          columns: ~w{a b c}, leading_space_count: 2}, 95 },
+          columns: ~w{a b c}, spacing: 2}, 95 },
       { "  | a         | ", %Line.TableLine{content: "  | a         | ",
-          columns: ~w{a}, leading_space_count: 2}, 96 },
+          columns: ~w{a}, spacing: 2}, 96 },
       { "  a | b | c  ",    %Line.TableLine{content: "  a | b | c  ",
-          columns: ~w{a b c}, leading_space_count: 2}, 97 },
+          columns: ~w{a b c}, spacing: 2}, 97 },
       { "  a \\| b | c  ",  %Line.TableLine{content: "  a \\| b | c  ",
-          columns: [ "a | b",  "c"], leading_space_count: 2}, 98 },
+          columns: [ "a | b",  "c"], spacing: 2}, 98 },
 
       #
       # Plugins
@@ -168,7 +168,7 @@ defmodule Functional.Scanner.LineTypeTest do
     test("line: '" <> text <> "'") do
       struct = unquote(Macro.escape type)
       struct = %{ struct | line: unquote(text), lnb: 42 }
-      assert Line.type_with_leading_space_count({unquote(text), 42}, Support.Helpers.options, false) == struct
+      assert Line.type_with_spacing({unquote(text), 42}, Support.Helpers.options, false) == struct
     end
   end)
 
